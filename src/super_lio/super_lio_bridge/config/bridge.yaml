@@ -1,0 +1,59 @@
+# Super-LIO -> Nav2 桥接参数
+
+super_lio_bridge:
+  ros__parameters:
+    # Super-LIO 的输出（话题名取自它的 ROSWrapper，均为标准消息类型）
+    lio_odom_topic: /lio/odom            # nav_msgs/Odometry，frame_id = world
+    lio_cloud_topic: /lio/cloud_world    # sensor_msgs/PointCloud2，frame_id = world
+
+    # Nav2 需要的坐标系
+    map_frame: map
+    odom_frame: odom
+    base_frame: base_footprint
+
+    # Super-LIO 的 imu 帧 -> base_footprint：x y z roll pitch yaw
+    # 【2026-10-25 实测标定】不再是手册估算值。依据：
+    #   - 雷达离地高度 0.400 m（站立时点云地面峰实测）；
+    #   - 机身站立高度 0.370 m（/joint_states + 官方 URDF 腿部 FK，六足离散 0.1cm；
+    #     与手册整机高 480mm 吻合：0.370 + 壳体 0.110）；
+    #   - 雷达 x 偏移 0.317 m（手册 V1.6 p33 dx=317.2mm，与 trunk 网格顶部
+    #     安装脊前端 +0.328 吻合；旧值 0.382 是头部尖端尺寸）；
+    #   - 俯仰 10°低头（正前最近地面 1.27m 反解 pitch≈10.5° + 手册"雷达平面
+    #     与水平夹角 80°"；旧值 15° 是支架角度）。
+    # base->livox = 平移(0.317, 0, 0.400) · R_y(+10°)，此处为其逆变换。
+    # 与 gld_robot_description.urdf 的 base_to_chassis / chassis_to_livox_frame
+    # 一一对应，改要一起改。
+    # 雷达俯仰 15°（2026-10-29 实测 /lio/odom 俯仰 15.26°，站立确认）。
+    # = URDF chassis_to_livox_frame 的逆：平移 -Rᵀ·[0.317,0,0.40]，pitch 取负。
+    # 原值 10°：[-0.2427, 0.0, -0.4490, 0.0, -0.1745, 0.0]
+    imu_to_base: [-0.2027, 0.0, -0.4684, 0.0, -0.2618, 0.0]
+
+    # 输出
+    odom_topic: /odom
+    registered_scan_topic: /registered_scan
+    # 雷达系点云：点已从 world 变换到 sensor_frame（≈MID-360 内置 IMU 位置），
+    # 并滤掉世界系 z 低于「base 高度 + ground_clearance」的地面回波。
+    # costmap 的 VoxelLayer 必须吃这一份而不是 /registered_scan —— costmap
+    # 把点云 frame 原点当传感器原点，map 系点云会让观测全帧被丢弃或错误清理，
+    # 详见 tf_bridge.py 的 _publish_sensor_cloud 注释。
+    sensor_cloud_topic: /registered_scan_livox
+    sensor_frame: livox_frame
+    ground_clearance: 0.08
+    publish_cloud: true
+    tracking_ok_topic: /localization/tracking_ok
+    tracking_status_topic: /localization/tracking_status
+
+    # 位姿多久没更新就判为失效 -> 锁住自动驾驶（安全层的看门狗盯 tracking_ok）。
+    # Super-LIO 的 odom 约 20Hz，1.0s 有充足余量。
+    odom_timeout: 1.0
+    publish_rate: 50.0
+    # TF 与点云保持同一测量时刻；不通过修改时间戳来伪装运动预测。
+    stamp_offset: 0.0
+
+    # 定位来源
+    #   internal —— Super-LIO relocation 模式自己输出 map 系绝对位姿；
+    #               本节点用第一帧锚定 map->odom，之后保持不变。
+    #   external —— Super-LIO 以 mapping 模式只输出 odom 系里程计；
+    #               map->odom 由 small_gicp_relocalization 持续修正（2Hz），
+    #               本节点不再发布 map->odom，也不发布 tracking_ok/status。
+    localization_mode: internal

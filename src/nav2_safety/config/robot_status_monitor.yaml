@@ -1,0 +1,49 @@
+# 机器人实时状态聚合（只读）
+#
+# 输出：
+#   /robot/status          std_msgs/String，JSON，2 Hz，transient_local
+#   /robot/status_markers  visualization_msgs/MarkerArray，机器人上方文字
+#
+# 状态优先级：
+#   ESTOP > STARTING/SAFETY_LOCK > RECOVERING > STUCK > NAVIGATING
+#         > EXPLORING > EXPLORE_DONE > IDLE
+
+robot_status_monitor:
+  ros__parameters:
+    publish_rate: 2.0
+
+    # “卡住”判据：导航 active + 有速度指令 + 连续这么久没有进展。
+    # 比 controller_server 的 progress checker（0.25 m / 15 s）略短，
+    # 让界面先提示，而不是等 BT 已经 abort 才看到。
+    stuck_timeout: 12.0
+    # 里程碑：XY 位移超过它，或 yaw 变化超过 yaw_progress_epsilon，算有进展。
+    progress_epsilon: 0.05
+    yaw_progress_epsilon: 0.2
+
+    # 速度指令新鲜度 / 非零阈值
+    cmd_timeout: 0.5
+    cmd_linear_threshold: 0.02
+    cmd_angular_threshold: 0.1
+
+    # 观测新鲜度
+    # 导航状态变化或当前目标 feedback 均可刷新；探索状态是锁存事件，不设过期。
+    nav_status_timeout: 2.5
+    odom_timeout: 0.5
+    scan_timeout: 1.0
+    # 看门狗启动宽限期内 autonomy_blocked 本来就是 true，显示"启动中"而不是故障。
+    startup_grace: 8.0
+
+    # cmd_vel_nav_smoothed 非零、cmd_vel_nav_checked 连续为零超过该时长，
+    # 判为 collision_monitor 在停车（贴墙/障碍）。
+    collision_stop_time: 0.5
+
+    # RViz 文字 marker
+    publish_marker: true
+    marker_frame: base_footprint
+    marker_height: 1.1
+
+    # 六足状态机（/robot_state 由 vendor 运控发布，约 200 Hz，temp[10] 是状态编号：
+    # 0=passive 1=standDown 2=standUp 3=balanceStand 4=Walk）。
+    # vendor 没有电池 ROS 话题，/robot/status 里没有 battery 字段。
+    robot_state_topic: /robot_state
+    state_timeout: 2.0

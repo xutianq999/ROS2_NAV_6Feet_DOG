@@ -1,0 +1,21 @@
+Pointcloud2d_3d:
+  ros__parameters:
+    # 切片目标帧用 chassis（水平、不随雷达俯倾）。
+    # Hexplorer 的 MID-360 前倾 15° 安装，如果像原来那样切在 livox_frame 里，
+    # 高度窗口会随距离被 sin(15°)*range 拉歪（5m 处偏差 1.3m）；
+    # chassis 帧是水平的，切片高度才有意义。节点会把点云先 TF 过来再切。
+    target_frame: "chassis"
+    transform_tolerance: 0.2
+    # 高度相对 chassis（几何中心）。站立时机身中心约离地 0.25 m（待实测）：
+    #   -0.15 ≈ 离地 0.10 m —— 排除地面但保留低矮障碍
+    #   +0.30 ≈ 离地 0.55 m —— 高于机身（站立高 0.48 m）；更高的悬空物
+    #   不进 2D 切片，由 3D voxel 层负责。
+    min_height: -0.15
+    max_height: 0.30
+    angle_min: -3.14159
+    angle_max: 3.14159
+    angle_increment: 0.0087 # 约 0.5 度分辨率
+    scan_time: 0.1
+    range_min: 0.05     # 最小有效距离（米）
+    range_max: 70.0    # 最大有效距离（米）
+    use_sim_time: false

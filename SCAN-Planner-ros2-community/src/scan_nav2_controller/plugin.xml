@@ -1,0 +1,5 @@
+<library path="scan_nav2_controller">
+  <class name="scan_nav2_controller/ScanController" type="scan_nav2_controller::ScanController" base_class_type="nav2_core::Controller">
+    <description>Only accepts SCAN commands tagged with the current Nav2 path.</description>
+  </class>
+</library>

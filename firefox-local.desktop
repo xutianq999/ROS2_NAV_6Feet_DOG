@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Firefox
+Comment=Firefox 浏览器
+Exec=/home/robot/Downloads/firefox-158.0.1/firefox/firefox %u
+Icon=/home/robot/Downloads/firefox-158.0.1/firefox/browser/chrome/icons/default/default128.png
+Terminal=false
+Categories=Network;WebBrowser;
+StartupWMClass=firefox

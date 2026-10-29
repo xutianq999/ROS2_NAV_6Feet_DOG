@@ -1,0 +1,17 @@
+# ==========================================================
+# 地图路径统一配置：换地图时只需要修改本文件，不用改任何代码
+# ==========================================================
+# 路径解析规则：
+#   - 相对路径：以 me_nav2_bringup 包的安装目录 (share/me_nav2_bringup) 为基准，
+#     例如 "pcd/nav_test_4_27.pcd" 即 src/me_nav2_bringup/pcd/nav_test_4_27.pcd
+#   - 绝对路径：直接使用，可指向包外的任意位置
+
+# 全局重定位（KISS-Matcher / small_gicp）配准用的 3D 点云地图
+# 仓库不包含大体积 PCD；请把建图产出的点云放到 src/me_nav2_bringup/pcd/，
+# 或改成你自己的绝对路径。首次使用可先跑 mapping 模式生成地图。
+prior_pcd_file: "pcd/map.pcd"
+
+# Nav2 地图服务器加载的 2D 栅格地图 yaml（对应 .pgm 路径写在该 yaml 内）
+# 仓库内附带的示例地图（仅用于跑通流程，实际部署请换成现场地图）：
+#   src/me_nav2_bringup/map/nav_test_4_27_from_pcd.yaml
+map_yaml_file: "map/explore_20261025_145046.yaml"   # 2026-10-25 探索建图成果，可自行编辑 pgm 后原地生效

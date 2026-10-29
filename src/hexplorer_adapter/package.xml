@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>hexplorer_adapter</name>
+  <version>1.0.0</version>
+  <description>
+    Nav2 栈到 Dobot Hexplorer (miniHex_v2) 的底盘适配层：
+    订阅导航最终输出的 /cmd_vel，维护六足状态机到 WALK，
+    并把速度转发到 vendor 运控的 /vel_cmd。
+    vendor 侧（robot_controller_release）不做任何修改，只通过话题交互。
+  </description>
+  <maintainer email="hexplorer@example.com">robot</maintainer>
+  <license>MIT</license>
+
+  <depend>rclpy</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>custom_msg</depend>
+
+  <exec_depend>ros2launch</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

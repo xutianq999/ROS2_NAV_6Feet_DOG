@@ -1,0 +1,814 @@
+<robot name="hexplorer_mini_hex_v2">
+
+  
+  <material name="body_blue">
+    <color rgba="0.23 0.42 0.78 1.0" />
+  </material>
+  <!--
+  2026-10-25: 嫁入官方 dobot_hex 18 自由度腿部模型（源 dobot_hex-URDF/，
+  关节名与 vendor robot_jointstate_publisher_node 的 /joint_states 一致）。
+  腿的 abad 关节原挂在 link_trunk（=机身几何中心），此处挂到 chassis（同原点），
+  躯干网格并入 chassis 的 visual；world 链接与 world->trunk 固定关节已删除
+  （TF 树根必须是 base_footprint，由 map/odom 提供定位）。足端 6 个 fixed
+  关节一并保留（link_*_foot）。关节 TF 由 vendor robot_jointstate_publisher_node
+  的 /joint_states 驱动（见 gld_robot_description_launch.py，joint_states:=false 可关）。
+--><material name="body_dark">
+    <color rgba="0.16 0.18 0.21 1.0" />
+  </material>
+  <material name="lidar_body">
+    <color rgba="0.12 0.13 0.15 1.0" />
+  </material>
+  <material name="lidar_lens">
+    <color rgba="0.02 0.05 0.12 0.95" />
+  </material>
+
+  
+  
+  <link name="base_footprint" />
+
+  <joint name="base_to_chassis" type="fixed">
+    <parent link="base_footprint" />
+    <child link="chassis" />
+    <origin xyz="0.0 0.0 0.370" rpy="0 0 0" />
+  </joint>
+
+  
+  
+  <link name="chassis">
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.66 0.26 0.22" />
+      </geometry>
+    </collision>
+
+    <inertial>
+      <mass value="20.0" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.30" ixy="0.0" ixz="0.0" iyy="0.90" iyz="0.0" izz="1.00" />
+    </inertial>
+  <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/trunk.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    </link>
+
+  
+  
+  <link name="livox_frame">
+    <visual>
+      <origin xyz="0.0 0.0 -0.015" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.038" length="0.03" />
+      </geometry>
+      <material name="lidar_body" />
+    </visual>
+    <visual>
+      <origin xyz="0.0 0.0 0.012" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.034" length="0.024" />
+      </geometry>
+      <material name="lidar_lens" />
+    </visual>
+    <collision>
+      <origin xyz="0.0 0.0 0.0" rpy="0 0 0" />
+      <geometry>
+        <cylinder radius="0.04" length="0.06" />
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="chassis_to_livox_frame" type="fixed">
+    <parent link="chassis" />
+    <child link="livox_frame" />
+    
+    <!-- 俯仰 15°（原 10° = 0.1745）；与 bridge.yaml 的 imu_to_base 必须同步 -->
+    <origin xyz="0.317 0.0 0.030" rpy="0 0.2618 0" />
+  </joint>
+
+<link name="link_front_left_hip">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00249 0.00198 0.000018" />
+      <mass value="0.506" />
+      <inertia ixx="162.713E-06" ixy="-1.271e-05" ixz="0.0" iyy="293.236E-06" iyz="0.0" izz="258.577E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/hip.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0.08 0" />
+      <geometry>
+        <cylinder length="0.04" radius="0.048" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_front_left_thigh">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00615 -0.01668 -0.0405" />
+      <mass value="1.094" />
+      <inertia ixx="6155E-06" ixy="-0.000105" ixz="0.00045" iyy="6140E-06" iyz="-0.000724" izz="805E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/thigh_left.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 1.5708 0" xyz="-0.0225 0 -0.12" />
+      <geometry>
+        <box size="0.12 0.024 0.033" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_front_left_calf">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00209 0.0 -0.118722" />
+      <mass value="0.145" />
+      <inertia ixx="1143.834E-06" ixy="0.0E-06" ixz="-41.078E-06" iyy="1165.29E-06" iyz="0.0E-06" izz="34.028E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/calf.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 -0.22 0" xyz="0.00 0 -0.06" />
+      <geometry>
+        <cylinder length="0.12" radius="0.012" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.018 0 -0.16" />
+      <geometry>
+        <cylinder length="0.065" radius="0.011" />
+      </geometry>
+    </collision>
+    
+  </link>
+  <link name="link_front_left_foot">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.01" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.022" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.06" />
+      <inertia ixx="9.6e-06" ixy="0.0" ixz="0.0" iyy="9.6e-06" iyz="0.0" izz="9.6e-06" />
+    </inertial>
+  </link>
+  <link name="link_front_right_hip">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00249 -0.00198 0.000018" />
+      <mass value="0.506" />
+      <inertia ixx="162.713E-06" ixy="1.271e-05" ixz="0.0" iyy="293.236E-06" iyz="-0.0" izz="258.577E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="3.141592653589793 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/hip.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 -0.08 0" />
+      <geometry>
+        <cylinder length="0.04" radius="0.048" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_front_right_thigh">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00615 0.01668 -0.0405" />
+      <mass value="1.094" />
+      <inertia ixx="6155E-06" ixy="0.000105" ixz="0.00045" iyy="6140E-06" iyz="0.000724" izz="805E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/thigh_right.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 1.5708 0" xyz="-0.0225 0 -0.12" />
+      <geometry>
+        <box size="0.12 0.024 0.033" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_front_right_calf">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00209 0.0 -0.118722" />
+      <mass value="0.145" />
+      <inertia ixx="1143.834E-06" ixy="0.0E-06" ixz="-41.078E-06" iyy="1165.29E-06" iyz="0.0E-06" izz="34.028E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/calf.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 -0.22 0" xyz="0.00 0 -0.06" />
+      <geometry>
+        <cylinder length="0.12" radius="0.012" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.018 0 -0.16" />
+      <geometry>
+        <cylinder length="0.065" radius="0.011" />
+      </geometry>
+    </collision>
+    
+  </link>
+  <link name="link_front_right_foot">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.01" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.022" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.06" />
+      <inertia ixx="9.6e-06" ixy="0.0" ixz="0.0" iyy="9.6e-06" iyz="0.0" izz="9.6e-06" />
+    </inertial>
+  </link>
+  <link name="link_mid_left_hip">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00249 0.00198 0.000018" />
+      <mass value="0.506" />
+      <inertia ixx="162.713E-06" ixy="-1.271e-05" ixz="0.0" iyy="293.236E-06" iyz="0.0" izz="258.577E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/hip.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0.08 0" />
+      <geometry>
+        <cylinder length="0.04" radius="0.048" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_mid_left_thigh">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00615 -0.01668 -0.0405" />
+      <mass value="1.094" />
+      <inertia ixx="6155E-06" ixy="-0.000105" ixz="0.00045" iyy="6140E-06" iyz="-0.000724" izz="805E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/thigh_left.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 1.5708 0" xyz="-0.0225 0 -0.12" />
+      <geometry>
+        <box size="0.12 0.024 0.033" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_mid_left_calf">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00209 0.0 -0.118722" />
+      <mass value="0.145" />
+      <inertia ixx="1143.834E-06" ixy="0.0E-06" ixz="-41.078E-06" iyy="1165.29E-06" iyz="0.0E-06" izz="34.028E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/calf.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 -0.22 0" xyz="0.00 0 -0.06" />
+      <geometry>
+        <cylinder length="0.12" radius="0.012" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.018 0 -0.16" />
+      <geometry>
+        <cylinder length="0.065" radius="0.011" />
+      </geometry>
+    </collision>
+    
+  </link>
+  <link name="link_mid_left_foot">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.01" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.022" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.06" />
+      <inertia ixx="9.6e-06" ixy="0.0" ixz="0.0" iyy="9.6e-06" iyz="0.0" izz="9.6e-06" />
+    </inertial>
+  </link>
+  <link name="link_mid_right_hip">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00249 -0.00198 0.000018" />
+      <mass value="0.506" />
+      <inertia ixx="162.713E-06" ixy="1.271e-05" ixz="0.0" iyy="293.236E-06" iyz="-0.0" izz="258.577E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="3.141592653589793 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/hip.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 -0.08 0" />
+      <geometry>
+        <cylinder length="0.04" radius="0.048" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_mid_right_thigh">
+    <inertial>
+      <origin rpy="0 0 0" xyz="-0.00615 0.01668 -0.0405" />
+      <mass value="1.094" />
+      <inertia ixx="6155E-06" ixy="0.000105" ixz="0.00045" iyy="6140E-06" iyz="0.000724" izz="805E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/thigh_right.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 1.5708 0" xyz="-0.0225 0 -0.12" />
+      <geometry>
+        <box size="0.12 0.024 0.033" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_mid_right_calf">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00209 0.0 -0.118722" />
+      <mass value="0.145" />
+      <inertia ixx="1143.834E-06" ixy="0.0E-06" ixz="-41.078E-06" iyy="1165.29E-06" iyz="0.0E-06" izz="34.028E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/calf.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 -0.22 0" xyz="0.00 0 -0.06" />
+      <geometry>
+        <cylinder length="0.12" radius="0.012" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.018 0 -0.16" />
+      <geometry>
+        <cylinder length="0.065" radius="0.011" />
+      </geometry>
+    </collision>
+    
+  </link>
+  <link name="link_mid_right_foot">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.01" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.022" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.06" />
+      <inertia ixx="9.6e-06" ixy="0.0" ixz="0.0" iyy="9.6e-06" iyz="0.0" izz="9.6e-06" />
+    </inertial>
+  </link>
+  <link name="link_rear_left_hip">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00249 0.00198 0.000018" />
+      <mass value="0.506" />
+      <inertia ixx="162.713E-06" ixy="1.271e-05" ixz="-0.0" iyy="293.236E-06" iyz="0.0" izz="258.577E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 3.141592653589793 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/hip.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 0.08 0" />
+      <geometry>
+        <cylinder length="0.04" radius="0.048" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_rear_left_thigh">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00615 -0.01668 -0.0405" />
+      <mass value="1.094" />
+      <inertia ixx="6155E-06" ixy="0.000105" ixz="-0.00045" iyy="6140E-06" iyz="-0.000724" izz="805E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/thigh_left.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 1.5708 0" xyz="-0.0225 0 -0.12" />
+      <geometry>
+        <box size="0.12 0.024 0.033" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_rear_left_calf">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00209 0.0 -0.118722" />
+      <mass value="0.145" />
+      <inertia ixx="1143.834E-06" ixy="0.0E-06" ixz="-41.078E-06" iyy="1165.29E-06" iyz="0.0E-06" izz="34.028E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/calf.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 -0.22 0" xyz="0.00 0 -0.06" />
+      <geometry>
+        <cylinder length="0.12" radius="0.012" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.018 0 -0.16" />
+      <geometry>
+        <cylinder length="0.065" radius="0.011" />
+      </geometry>
+    </collision>
+    
+  </link>
+  <link name="link_rear_left_foot">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.01" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.022" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.06" />
+      <inertia ixx="9.6e-06" ixy="0.0" ixz="0.0" iyy="9.6e-06" iyz="0.0" izz="9.6e-06" />
+    </inertial>
+  </link>
+  <link name="link_rear_right_hip">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00249 -0.00198 0.000018" />
+      <mass value="0.506" />
+      <inertia ixx="162.713E-06" ixy="-1.271e-05" ixz="-0.0" iyy="293.236E-06" iyz="-0.0" izz="258.577E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="3.141592653589793 3.141592653589793 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/hip.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="1.5708 0 0" xyz="0 -0.08 0" />
+      <geometry>
+        <cylinder length="0.04" radius="0.048" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_rear_right_thigh">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00615 0.01668 -0.0405" />
+      <mass value="1.094" />
+      <inertia ixx="6155E-06" ixy="-0.000105" ixz="-0.00045" iyy="6140E-06" iyz="0.000724" izz="805E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/thigh_right.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 1.5708 0" xyz="-0.0225 0 -0.12" />
+      <geometry>
+        <box size="0.12 0.024 0.033" />
+      </geometry>
+    </collision>
+  </link>
+  <link name="link_rear_right_calf">
+    <inertial>
+      <origin rpy="0 0 0" xyz="0.00209 0.0 -0.118722" />
+      <mass value="0.145" />
+      <inertia ixx="1143.834E-06" ixy="0.0E-06" ixz="-41.078E-06" iyy="1165.29E-06" iyz="0.0E-06" izz="34.028E-06" />
+    </inertial>
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <mesh filename="package://gld_robot_description/meshes/calf.STL" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 -0.22 0" xyz="0.00 0 -0.06" />
+      <geometry>
+        <cylinder length="0.12" radius="0.012" />
+      </geometry>
+    </collision>
+    <collision>
+      <origin rpy="0 0 0" xyz="0.018 0 -0.16" />
+      <geometry>
+        <cylinder length="0.065" radius="0.011" />
+      </geometry>
+    </collision>
+    
+  </link>
+  <link name="link_rear_right_foot">
+    <visual>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.01" />
+      </geometry>
+      <material name="">
+        <color rgba="0.752941176470588 0.752941176470588 0.752941176470588 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin rpy="0 0 0" xyz="0 0 0" />
+      <geometry>
+        <sphere radius="0.022" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.06" />
+      <inertia ixx="9.6e-06" ixy="0.0" ixz="0.0" iyy="9.6e-06" iyz="0.0" izz="9.6e-06" />
+    </inertial>
+  </link>
+  <joint name="joint_front_left_abad" type="revolute">
+    <origin rpy="0 0 0" xyz="0.3003 0.05 0" />
+    <parent link="chassis" />
+    <child link="link_front_left_hip" />
+    <axis xyz="1 0 0" />
+    <limit effort="17" lower="-0.6632" upper="0.6632" velocity="36" />
+  </joint>
+  <joint name="joint_front_left_thigh_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0  0.0893 0.0" />
+    <parent link="link_front_left_hip" />
+    <child link="link_front_left_thigh" />
+    <axis xyz="0 1 0" />
+    <limit effort="17" lower="-0.87266" upper="3.14159" velocity="36" />
+  </joint>
+  <joint name="joint_front_left_calf_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0 0.0 -0.22" />
+    <parent link="link_front_left_thigh" />
+    <child link="link_front_left_calf" />
+    <axis xyz="0 1 0" />
+    <limit effort="29" lower="-2.7925" upper="-0.5236" velocity="22" />
+  </joint>
+  <joint dont_collapse="true" name="front_left_foot_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.002 0 -0.22" />
+    <parent link="link_front_left_calf" />
+    <child link="link_front_left_foot" />
+  </joint>
+  <joint name="joint_front_right_abad" type="revolute">
+    <origin rpy="0 0 0" xyz="0.3003 -0.05 0" />
+    <parent link="chassis" />
+    <child link="link_front_right_hip" />
+    <axis xyz="1 0 0" />
+    <limit effort="17" lower="-0.6632" upper="0.6632" velocity="36" />
+  </joint>
+  <joint name="joint_front_right_thigh_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0  -0.0893 0.0" />
+    <parent link="link_front_right_hip" />
+    <child link="link_front_right_thigh" />
+    <axis xyz="0 1 0" />
+    <limit effort="17" lower="-0.87266" upper="3.14159" velocity="36" />
+  </joint>
+  <joint name="joint_front_right_calf_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0 0.0 -0.22" />
+    <parent link="link_front_right_thigh" />
+    <child link="link_front_right_calf" />
+    <axis xyz="0 1 0" />
+    <limit effort="29" lower="-2.7925" upper="-0.5236" velocity="22" />
+  </joint>
+  <joint dont_collapse="true" name="front_right_foot_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.002 0 -0.22" />
+    <parent link="link_front_right_calf" />
+    <child link="link_front_right_foot" />
+  </joint>
+  <joint name="joint_mid_left_abad" type="revolute">
+    <origin rpy="0 0 0" xyz="-0.005 0.1275 0" />
+    <parent link="chassis" />
+    <child link="link_mid_left_hip" />
+    <axis xyz="1 0 0" />
+    <limit effort="17" lower="-0.6632" upper="0.6632" velocity="36" />
+  </joint>
+  <joint name="joint_mid_left_thigh_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0  0.0893 0.0" />
+    <parent link="link_mid_left_hip" />
+    <child link="link_mid_left_thigh" />
+    <axis xyz="0 1 0" />
+    <limit effort="17" lower="-0.87266" upper="3.14159" velocity="36" />
+  </joint>
+  <joint name="joint_mid_left_calf_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0 0.0 -0.22" />
+    <parent link="link_mid_left_thigh" />
+    <child link="link_mid_left_calf" />
+    <axis xyz="0 1 0" />
+    <limit effort="29" lower="-2.7925" upper="-0.5236" velocity="22" />
+  </joint>
+  <joint dont_collapse="true" name="mid_left_foot_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.002 0 -0.22" />
+    <parent link="link_mid_left_calf" />
+    <child link="link_mid_left_foot" />
+  </joint>
+  <joint name="joint_mid_right_abad" type="revolute">
+    <origin rpy="0 0 0" xyz="-0.005 -0.1275 0" />
+    <parent link="chassis" />
+    <child link="link_mid_right_hip" />
+    <axis xyz="1 0 0" />
+    <limit effort="17" lower="-0.6632" upper="0.6632" velocity="36" />
+  </joint>
+  <joint name="joint_mid_right_thigh_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0  -0.0893 0.0" />
+    <parent link="link_mid_right_hip" />
+    <child link="link_mid_right_thigh" />
+    <axis xyz="0 1 0" />
+    <limit effort="17" lower="-0.87266" upper="3.14159" velocity="36" />
+  </joint>
+  <joint name="joint_mid_right_calf_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0 0.0 -0.22" />
+    <parent link="link_mid_right_thigh" />
+    <child link="link_mid_right_calf" />
+    <axis xyz="0 1 0" />
+    <limit effort="29" lower="-2.7925" upper="-0.5236" velocity="22" />
+  </joint>
+  <joint dont_collapse="true" name="mid_right_foot_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.002 0 -0.22" />
+    <parent link="link_mid_right_calf" />
+    <child link="link_mid_right_foot" />
+  </joint>
+  <joint name="joint_rear_left_abad" type="revolute">
+    <origin rpy="0 0 0" xyz="-0.3003 0.05 0" />
+    <parent link="chassis" />
+    <child link="link_rear_left_hip" />
+    <axis xyz="1 0 0" />
+    <limit effort="17" lower="-0.6632" upper="0.6632" velocity="36" />
+  </joint>
+  <joint name="joint_rear_left_thigh_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="-0.0  0.0893 0.0" />
+    <parent link="link_rear_left_hip" />
+    <child link="link_rear_left_thigh" />
+    <axis xyz="0 1 0" />
+    <limit effort="17" lower="-0.87266" upper="4.1713" velocity="37.7" />
+  </joint>
+  <joint name="joint_rear_left_calf_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0 0.0 -0.22" />
+    <parent link="link_rear_left_thigh" />
+    <child link="link_rear_left_calf" />
+    <axis xyz="0 1 0" />
+    <limit effort="29" lower="-2.7925" upper="-0.5236" velocity="22" />
+  </joint>
+  <joint dont_collapse="true" name="rear_left_foot_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.002 0 -0.22" />
+    <parent link="link_rear_left_calf" />
+    <child link="link_rear_left_foot" />
+  </joint>
+  <joint name="joint_rear_right_abad" type="revolute">
+    <origin rpy="0 0 0" xyz="-0.3003 -0.05 0" />
+    <parent link="chassis" />
+    <child link="link_rear_right_hip" />
+    <axis xyz="1 0 0" />
+    <limit effort="17" lower="-0.6632" upper="0.6632" velocity="36" />
+  </joint>
+  <joint name="joint_rear_right_thigh_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="-0.0  -0.0893 0.0" />
+    <parent link="link_rear_right_hip" />
+    <child link="link_rear_right_thigh" />
+    <axis xyz="0 1 0" />
+    <limit effort="17" lower="-0.87266" upper="4.1713" velocity="37.7" />
+  </joint>
+  <joint name="joint_rear_right_calf_pitch" type="revolute">
+    <origin rpy="0 0 0" xyz="0.0 0.0 -0.22" />
+    <parent link="link_rear_right_thigh" />
+    <child link="link_rear_right_calf" />
+    <axis xyz="0 1 0" />
+    <limit effort="29" lower="-2.7925" upper="-0.5236" velocity="22" />
+  </joint>
+  <joint dont_collapse="true" name="rear_right_foot_joint" type="fixed">
+    <origin rpy="0 0 0" xyz="-0.002 0 -0.22" />
+    <parent link="link_rear_right_calf" />
+    <child link="link_rear_right_foot" />
+  </joint>
+</robot>
